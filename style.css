@@ -160,7 +160,9 @@ a:visited {
   /* Match height and activity boxes */
   height: 9.25rem;
   transition: all 0.5s, transform 1ms;
-  position: relative; /* Add this */
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .form__close {

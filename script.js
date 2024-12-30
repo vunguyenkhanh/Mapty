@@ -1,6 +1,7 @@
 'use strict';
 
 const form = document.querySelector('.form');
+const listWorkouts = document.querySelector('.list-workouts');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
 const inputDistance = document.querySelector('.form__input--distance');
@@ -430,7 +431,7 @@ class App {
         </div>
       </li>`;
     }
-    form.insertAdjacentHTML('afterend', html);
+    listWorkouts.insertAdjacentHTML('beforeend', html);
   }
 
   _moveToPopup(e) {
