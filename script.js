@@ -278,8 +278,33 @@ class App {
       return;
     }
 
+    if (e.target.classList.contains('workout__delete')) {
+      this._deleteWorkout(workoutEl);
+      return;
+    }
+
     // Handle moving to popup
     this._moveToPopup(e);
+  }
+
+  _deleteWorkout(workoutEl) {
+    const workoutId = workoutEl.dataset.id;
+
+    // Remove from workouts array
+    this.#workouts = this.#workouts.filter(w => w.id !== workoutId);
+
+    // Remove marker from map
+    const marker = this.#markers.get(workoutId);
+    if (marker) {
+      marker.remove();
+      this.#markers.delete(workoutId);
+    }
+
+    // Remove from UI
+    workoutEl.remove();
+
+    // Update localStorage
+    this._setLocalStorage();
   }
 
   _editWorkout(workoutEl) {
@@ -309,7 +334,7 @@ class App {
   }
 
   _renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
+    const marker = L.marker(workout.coords)
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -324,13 +349,21 @@ class App {
         `${workout.type === 'running' ? '🏃' : '🚴‍♀️'} ${workout.description}`
       )
       .openPopup();
+
+    // Store marker reference in markers Map
+    this.#markers.set(workout.id, marker);
   }
 
   _renderWorkout(workout) {
     let html = `
         <li class="workout workout--${workout.type}" data-id="${workout.id}">
-          <button class="workout__edit" title="Edit">✏️</button>
-          <h2 class="workout__title">${workout.description}</h2>
+          <h2 class="workout__title">
+            ${workout.description}
+            <div class="workout__controls">
+              <button class="workout__edit" title="Edit">✏️</button>
+              <button class="workout__delete" title="Delete">🗑️</button>
+            </div>
+          </h2>
           <div class="workout__details">
             <span class="workout__icon">${
               workout.type === 'running' ? '🏃' : '🚴‍♀️'
