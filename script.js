@@ -606,6 +606,18 @@ class App {
     resetBtn.addEventListener('click', this.reset);
     deleteAllBtn.addEventListener('click', this._deleteAllWorkouts.bind(this));
     sortWorkouts.addEventListener('change', this._sortWorkouts.bind(this));
+
+    // Add close button event listener
+    document.querySelector('.form__close').addEventListener('click', e => {
+      e.preventDefault();
+      this._hideForm();
+      if (this.#editingWorkout) {
+        document
+          .querySelector('.workout--editing')
+          ?.classList.remove('workout--editing');
+        this.#editingWorkout = null;
+      }
+    });
   }
 }
 
