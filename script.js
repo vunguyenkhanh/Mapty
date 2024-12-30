@@ -421,14 +421,16 @@ class App {
     if (!data) return;
 
     this.#workouts = data.map(work => {
+      const date = new Date(work.date);
       let workout;
+
       if (work.type === 'running') {
         workout = new Running(
           work.coords,
           work.distance,
           work.duration,
           work.cadence,
-          new Date(work.date)
+          date
         );
       }
       if (work.type === 'cycling') {
@@ -437,11 +439,13 @@ class App {
           work.distance,
           work.duration,
           work.elevationGain,
-          new Date(work.date)
+          date
         );
       }
+
+      // Restore additional properties that were lost during JSON parse/stringify
       workout.id = work.id;
-      workout.date = new Date(work.date);
+      workout.clicks = work.clicks || 0;
       return workout;
     });
 
