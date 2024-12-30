@@ -205,6 +205,13 @@ a:visited {
   display: none;
 }
 
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
 .reset-btn {
   background-color: var(--color-brand--1);
   color: #fff;
@@ -213,13 +220,26 @@ a:visited {
   padding: 1rem 2rem;
   font-size: 1.4rem;
   cursor: pointer;
-  margin: 2rem 0;
-  align-self: center;
+  transition: background-color 0.3s;
+}
+
+.delete-all-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 1rem 2rem;
+  font-size: 1.4rem;
+  cursor: pointer;
   transition: background-color 0.3s;
 }
 
 .reset-btn:hover {
-  background-color: var(--color-brand--2);
+  background-color: #e09e3e;
+}
+
+.delete-all-btn:hover {
+  background-color: #c82333;
 }
 
 .copyright {

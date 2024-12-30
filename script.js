@@ -8,6 +8,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const resetBtn = document.querySelector('.reset-btn');
+const deleteAllBtn = document.querySelector('.delete-all-btn'); // Add this with other DOM selections at the top
 
 class Workout {
   date = new Date();
@@ -91,6 +92,7 @@ class App {
       this._handleWorkoutClick.bind(this)
     );
     resetBtn.addEventListener('click', this.reset.bind(this)); // Change this line
+    deleteAllBtn.addEventListener('click', this._deleteAllWorkouts.bind(this)); // Add this line
   }
 
   _getPosition() {
@@ -474,6 +476,23 @@ class App {
     this.#workouts = [];
     location.reload();
   };
+
+  _deleteAllWorkouts() {
+    if (!confirm('Are you sure you want to delete all workouts?')) return;
+
+    // Remove all markers from the map
+    this.#markers.forEach(marker => marker.remove());
+    this.#markers.clear();
+
+    // Remove all workouts from array
+    this.#workouts = [];
+
+    // Remove all workout elements from UI
+    document.querySelectorAll('.workout').forEach(workout => workout.remove());
+
+    // Update localStorage
+    this._setLocalStorage();
+  }
 }
 
 const app = new App();
