@@ -171,6 +171,23 @@ a:visited {
   display: none;
 }
 
+.reset-btn {
+  background-color: var(--color-brand--1);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 1rem 2rem;
+  font-size: 1.4rem;
+  cursor: pointer;
+  margin: 2rem 0;
+  align-self: center;
+  transition: background-color 0.3s;
+}
+
+.reset-btn:hover {
+  background-color: var(--color-brand--2);
+}
+
 .copyright {
   margin-top: auto;
   font-size: 1.3rem;
