@@ -106,7 +106,10 @@ class App {
   _getPosition() {
     if (navigator.geolocation)
       navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), () =>
-        alert('Could not get your position')
+        this._showPopup(
+          'Error',
+          'Could not get your position. Please enable location services.'
+        )
       );
   }
 
@@ -146,16 +149,27 @@ class App {
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
 
-  _createWorkout(type, coords, distance, duration, extra, date = new Date()) {
+  async _createWorkout(
+    type,
+    coords,
+    distance,
+    duration,
+    extra,
+    date = new Date()
+  ) {
     try {
-      this._validateInputs(distance, duration, extra);
+      const isValid = await this._validateInputs(distance, duration, extra);
+      if (!isValid) return null;
+
       if (type === 'running')
         return new Running(coords, distance, duration, extra, date);
       if (type === 'cycling')
         return new Cycling(coords, distance, duration, extra, date);
-      throw new Error('Invalid workout type');
+
+      await this._showPopup('Error', 'Invalid workout type');
+      return null;
     } catch (err) {
-      alert(err.message);
+      await this._showPopup('Error', err.message);
       return null;
     }
   }
@@ -188,10 +202,10 @@ class App {
     this.#markers.set(workout.id, marker);
   }
 
-  _newWorkout(e) {
+  async _newWorkout(e) {
     e.preventDefault();
     if (this.#editingWorkout) {
-      this._updateWorkout(e);
+      await this._updateWorkout(e);
       return;
     }
 
@@ -200,15 +214,21 @@ class App {
     const duration = +inputDuration.value;
     const extra =
       type === 'running' ? +inputCadence.value : +inputElevation.value;
-    const { lat, lng } = this.#mapEvent.latlng;
 
-    const workout = this._createWorkout(
+    if (!this.#mapEvent) {
+      await this._showPopup('Error', 'Please click on the map first');
+      return;
+    }
+
+    const { lat, lng } = this.#mapEvent.latlng;
+    const workout = await this._createWorkout(
       type,
       [lat, lng],
       distance,
       duration,
       extra
     );
+
     if (!workout) return;
 
     this.#workouts.push(workout);
@@ -222,7 +242,8 @@ class App {
     }
   }
 
-  _updateWorkout(e) {
+  async _updateWorkout(e) {
+    e.preventDefault();
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
@@ -230,13 +251,15 @@ class App {
       type === 'running' ? +inputCadence.value : +inputElevation.value;
     const oldWorkout = this.#editingWorkout;
 
-    const workout = this._createWorkout(
+    const workout = await this._createWorkout(
       type,
       oldWorkout.coords,
       distance,
       duration,
-      extra
+      extra,
+      oldWorkout.date
     );
+
     if (!workout) return;
 
     workout.id = oldWorkout.id;
@@ -248,6 +271,11 @@ class App {
     this._updateMarkers(workout, oldWorkout);
     this._updateWorkoutUI(workout);
     this._hideForm();
+
+    document
+      .querySelector('.workout--editing')
+      ?.classList.remove('workout--editing');
+
     this.#editingWorkout = null;
     this._setLocalStorage();
   }
@@ -258,9 +286,15 @@ class App {
     this._renderWorkout(workout);
   }
 
-  _validateInputs(...inputs) {
+  async _validateInputs(...inputs) {
     const isValid = inputs.every(inp => Number.isFinite(inp) && inp > 0);
-    if (!isValid) throw new Error('Inputs must be positive numbers');
+    if (!isValid) {
+      await this._showPopup(
+        'Invalid Input',
+        'Please enter valid positive numbers for all fields'
+      );
+      return false;
+    }
     return true;
   }
 
@@ -443,7 +477,6 @@ class App {
         );
       }
 
-      // Restore additional properties that were lost during JSON parse/stringify
       workout.id = work.id;
       workout.clicks = work.clicks || 0;
       return workout;
@@ -468,8 +501,14 @@ class App {
     location.reload();
   };
 
-  _deleteAllWorkouts() {
-    if (!confirm('Are you sure you want to delete all workouts?')) return;
+  async _deleteAllWorkouts() {
+    const confirmed = await this._showPopup(
+      'Delete All Workouts',
+      'Are you sure you want to delete all workouts? This action cannot be undone.',
+      true
+    );
+
+    if (!confirmed) return;
 
     this.#markers.forEach(marker => marker.remove());
     this.#markers.clear();
@@ -499,6 +538,62 @@ class App {
 
     document.querySelectorAll('.workout').forEach(workout => workout.remove());
     this.#workouts.forEach(workout => this._renderWorkout(workout));
+  }
+
+  _showPopup(title, message, isConfirm = false) {
+    const existingOverlay = document.querySelector('.popup-overlay');
+    if (existingOverlay) {
+      document.body.removeChild(existingOverlay);
+    }
+
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'popup-overlay';
+
+      const popup = document.createElement('div');
+      popup.className = 'popup';
+
+      popup.addEventListener('click', e => {
+        e.stopPropagation();
+      });
+
+      popup.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <div class="popup-buttons">
+          <button class="popup-button popup-button--confirm">${
+            isConfirm ? 'Yes' : 'OK'
+          }</button>
+          ${
+            isConfirm
+              ? '<button class="popup-button popup-button--cancel">Cancel</button>'
+              : ''
+          }
+        </div>
+      `;
+
+      overlay.appendChild(popup);
+      document.body.appendChild(overlay);
+
+      const confirmBtn = popup.querySelector('.popup-button--confirm');
+      const cancelBtn = popup.querySelector('.popup-button--cancel');
+
+      const cleanup = () => {
+        document.body.removeChild(overlay);
+      };
+
+      confirmBtn.addEventListener('click', () => {
+        cleanup();
+        resolve(true);
+      });
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          cleanup();
+          resolve(false);
+        });
+      }
+    });
   }
 
   _attachEventHandlers() {
