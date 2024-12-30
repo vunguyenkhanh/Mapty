@@ -29,7 +29,7 @@ body {
   overscroll-behavior-y: none;
 
   background-color: #fff;
-  padding: 2.5rem;
+  /* padding: 2.5rem; */
 
   display: flex;
 }
@@ -298,9 +298,34 @@ a:visited {
   padding: 10px 20px;
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 5px;
+  font-family: 'Manrope', sans-serif;
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 700;
   z-index: 1000;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   color: var(--color-dark--1);
+}
+
+.sort-workouts {
+  padding: 0.5rem;
+  margin: 1rem 2.25rem;
+  width: calc(100% - 4.5rem);
+  background-color: var(--color-dark--2);
+  color: var(--color-light--2);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sort-workouts:focus {
+  outline: none;
+  background-color: var(--color-dark--2);
+}
+
+.hidden {
+  display: none;
+}
+
+.leaflet-popup-content {
+  width: 265px !important;
 }
